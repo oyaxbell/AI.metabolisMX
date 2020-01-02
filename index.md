@@ -18,7 +18,7 @@ For more details see [my ResearchGate page](https://www.researchgate.net/profile
 
 <div style="float: left"><img src="images/fotoobc.jpg" align="middle" width="150" style="padding: 10px; float: right;"/></div>
 
--**Lab Coordinator**: Dr. Omar Yaxmehen Bello-Chavolla, MD PhD - Physician and researcher specialized in Applied Statistics interested in statistical modeling and machine learning as tools to address heterogeneity of metabolic diseases in admixed populations. Developer of the Metabolic Score for Insulin Resistance, the Metabolic Score for Visceral Fat and the SNNN Clusters tool for diabetes subgroup classification.
+**Lab Coordinator**: Dr. Omar Yaxmehen Bello-Chavolla, MD PhD - Physician and researcher specialized in Applied Statistics interested in statistical modeling and machine learning as tools to address heterogeneity of metabolic diseases in admixed populations. Developer of the Metabolic Score for Insulin Resistance, the Metabolic Score for Visceral Fat and the SNNN Clusters tool for diabetes subgroup classification.
 
 ### Publications
 1.	Bello-Chavolla OY, Aguilar-Salinas CA. Factors influencing achievement of low-density lipoprotein cholesterol goals in Mexico: The International ChoLesterol Management Practice Study. Rev Invest Clin. 2019;71(6):408-416. doi: 10.24875/RIC.19003156.
