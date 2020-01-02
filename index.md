@@ -1,8 +1,6 @@
-## Welcome to GitHub Pages
+# Welcome to AI MetablolisMX
 
-You can use the [editor on GitHub](https://github.com/oyaxbell/ai.metabolism/edit/master/index.md) to maintain and preview the content for your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+We are an emerging research group aimed at developing cutting-edge data-driven research in diabetes and metabolism using statistical modeling, high-dimensional analysis and machine learning
 
 ### Markdown
 
