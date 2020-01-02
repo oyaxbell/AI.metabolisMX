@@ -1,4 +1,4 @@
-# Welcome to the AI MetablolisMX Lab
+# Welcome to the AI MetabolisMX Lab
 
 We are an emerging research group aimed at developing cutting-edge data-driven research in diabetes and metabolism using statistical modeling, high-dimensional analysis and machine learning. 
 
