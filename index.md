@@ -15,7 +15,7 @@ For more details see [my ResearchGate page](https://www.researchgate.net/profile
 
 ### Team Members
 
-<img src="images/fotoobc.jpg" class="float" width="50"/>
+<img src="images/fotoobc.jpg" class="float" width="75"/>
 
 -**Lab Coordinator**: Dr. Omar Yaxmehen Bello-Chavolla
 
