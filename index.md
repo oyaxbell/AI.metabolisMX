@@ -14,7 +14,7 @@ We are an emerging research group aimed at developing cutting-edge data-driven r
 For more details see [my ResearchGate page](https://www.researchgate.net/profile/Omar_Bello-Chavolla).
 
 ### Team Members
-
+<img src="..\images\Foto formal.png">
 -**Lab Coordinator**: Dr. Omar Yaxmehen Bello-Chavolla
 
 ### Relevant links
