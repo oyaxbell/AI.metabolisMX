@@ -15,7 +15,7 @@ For more details see [my ResearchGate page](https://www.researchgate.net/profile
 
 ### Team Members
 
-<img src="\AI.metabolisMX\images\fotoobc.jpg">
+<img src="images/fotoobc.jpg" class="float" width="100"/>
 
 -**Lab Coordinator**: Dr. Omar Yaxmehen Bello-Chavolla
 
