@@ -16,7 +16,7 @@ For more details see [my ResearchGate page](https://www.researchgate.net/profile
 
 ### Team Members
 
-<div style="float: left"><img src="images/fotoobc.jpg" width="250"/></div>
+<div style="float: left"><img src="images/fotoobc.jpg" width="200"/></div>
 
 -**Lab Coordinator**: Dr. Omar Yaxmehen Bello-Chavolla, MD PhD - Physician and researcher specialized in Applied Statistics interested in statistical modeling and machine learning as tools to address heterogeneity of metabolic diseases in admixed populations. Developer of the Metabolic Score for Insulin Resistance, the Metabolic Score for Visceral Fat and the SNNN Clusters tool for diabetes subgroup classification.
 
@@ -43,8 +43,6 @@ For more details see [my ResearchGate page](https://www.researchgate.net/profile
 20.	Bello-Chavolla OY, Aguilar-Salinas CA. Management of type 2 diabetes in the elderly patient. J Lat Am Geriat Med. 2017; 3:26-36
 21.	Bello-Chavolla OY, Rojas-Martinez R, Aguilar-Salinas CA, Hernández-Avila M. Epidemiology of diabetes mellitus in Mexico. Nutr Rev. 2017 Jan;75(suppl 1):4-12
 22.	Bello-Chavolla OY, Aguilar-Salinas CA. Comentarios a artículos de actualidad en diabetes. Rev ALAD. 2016; 6:55-61. 
-
-
 
 ### Relevant links
 
