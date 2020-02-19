@@ -6,7 +6,7 @@ We are an emerging research group at the National Institute of Geriatrics in Mex
 
 For Spanish click [here](https://oyaxbell.github.io/AI.metabolisMX/spanish). / Para español haz click [aquí](https://oyaxbell.github.io/AI.metabolisMX/spanish).
 
-### Research
+## Research
 -**Data-driven metabolic subtypes**: We are working on addressing heterogeneity of metabolic diseases and ageing patterns using multivariate methods and unsupervised machine learning in order to identify reproducible disease patterns with differential risk and treatment responses. Our current focus is on understanding heterogeneity of type 2 diabetes in Mexico and familial combined hyperlipidemia phenotypes.
 <br/>
 -**Low-cost metabolic risk prediction**: We have developed metabolic scores aimed at providing metabolic risk prediction with higher accuracy using low-coest approaches that can be readily reproduced in primary-care settings. Our focus in on developing these tools primarily to investigate insulin resistance related phenomena, including type 2 diabetes, visceral obesity and non-alcoholic fatty liver disease.
@@ -18,15 +18,16 @@ For Spanish click [here](https://oyaxbell.github.io/AI.metabolisMX/spanish). / P
 <br/>
 
 
-### Team Members
+## Team Members
 
 <div style="float: left"><img src="images/fotoobc.jpg" align="middle" width="150" style="padding: 10px; float: right;"/></div>
 
 **Lab Coordinator**: Dr. Omar Yaxmehen Bello-Chavolla, MD PhD - Physician and researcher specialized in Applied Statistics interested in statistical modeling and machine learning as tools to address heterogeneity of metabolic diseases and ageing in admixed populations. Developer of the Metabolic Score for Insulin Resistance, the Metabolic Score for Visceral Fat and the SNNN Clusters tool for diabetes subgroup classification. For more details see my [ResearchGate page](https://www.researchgate.net/profile/Omar_Bello-Chavolla).
 
-####Colaborators
+### Colaborators
 
 **Alejandro Márquez, Research Intern** - Plan de Estudios Combinados en Medicina - MD/PhD Program, UNAM
+<br/>
 
 ### Call for Research Associates and Postgraduate Students
 
