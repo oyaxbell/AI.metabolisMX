@@ -10,7 +10,6 @@ Somos un grupo de investigación jóven del Instituto Nacional de Geriatría en 
 <br/>
 <br/>
 
-
 ### Miembros del equipo
 
 <div style = "float: left"> <img src = "images/fotoobc.jpg" align = "middle" width = "150" style = "padding: 10px; float: right;" /> </div>
