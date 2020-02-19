@@ -24,6 +24,10 @@ For Spanish click [here](https://oyaxbell.github.io/AI.metabolisMX/spanish). / P
 
 **Lab Coordinator**: Dr. Omar Yaxmehen Bello-Chavolla, MD PhD - Physician and researcher specialized in Applied Statistics interested in statistical modeling and machine learning as tools to address heterogeneity of metabolic diseases and ageing in admixed populations. Developer of the Metabolic Score for Insulin Resistance, the Metabolic Score for Visceral Fat and the SNNN Clusters tool for diabetes subgroup classification. For more details see my [ResearchGate page](https://www.researchgate.net/profile/Omar_Bello-Chavolla).
 
+####Colaborators
+
+**Alejandro Márquez, Research Intern** - Plan de Estudios Combinados en Medicina - MD/PhD Program, UNAM
+
 ### Call for Research Associates and Postgraduate Students
 
 Students interested in initiating a research internship, Masters or Doctoral position are welcome to apply for a research position. We are looking for young researchers interested in statistical modeling, machine learning and its application in understanding ageing physiology and its interaction with metabolism. Any inquiries please write to oyaxbell@yahoo.com.mx
