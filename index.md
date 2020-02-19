@@ -4,7 +4,7 @@
 
 We are an emerging research group at the National Institute of Geriatrics in Mexico City, aimed at developing cutting-edge data-driven research in diabetes and metabolism with a focus on its impact on ageing using statistical modeling, high-dimensional analysis and machine learning. 
 
-For Spanish click [here](https://https://oyaxbell.github.io/AI.metabolisMX/spanish.html). / Para español haz click [aquí](https://https://oyaxbell.github.io/AI.metabolisMX/spanish.html).
+For Spanish click [here](https://https://oyaxbell.github.io/AI.metabolisMX/spanish). / Para español haz click [aquí](https://https://oyaxbell.github.io/AI.metabolisMX/spanish).
 
 ### Research
 -**Data-driven metabolic subtypes**: We are working on addressing heterogeneity of metabolic diseases and ageing patterns using multivariate methods and unsupervised machine learning in order to identify reproducible disease patterns with differential risk and treatment responses. Our current focus is on understanding heterogeneity of type 2 diabetes in Mexico and familial combined hyperlipidemia phenotypes.
