@@ -28,6 +28,7 @@ For Spanish click [here](https://oyaxbell.github.io/AI.metabolisMX/spanish). / P
 
 **Alejandro Márquez, Research Intern** - Plan de Estudios Combinados en Medicina - MD/PhD Program, UNAM
 <br/>
+**Luisa Fernández Chirino, Research Intern and Bachelor Dissertation** - Facultad de Química, UNAM
 
 ### Call for Research Associates and Postgraduate Students
 
