@@ -19,6 +19,9 @@ Somos un grupo de investigación jóven del Instituto Nacional de Geriatría en 
 #### Colaboradores
 
 **Alejandro Márquez, Estancia de Investigación** - Plan de Estudios Combinados en Medicina - MD/PhD Program, UNAM
+<br/>
+<br/>
+**Luisa Fernández Chirino, Estancia de Investigación y Tesista** - Facultad de Química, UNAM
 
 ### Convocatoria para Asociados de Investigación y Estudiantes de Postgrado
 
