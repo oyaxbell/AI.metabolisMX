@@ -14,15 +14,15 @@ We are an emerging research group at the National Institute of Geriatrics in Mex
 -**Metabolic ageing**: An emerging field for our research goup is to delve into undertansing the interaction between metabolic diseases, ageing and age-related conditions to address the increasing metabolic burden that faces our ever-aging population
 <br/>
 <br/>
-For more details see [my ResearchGate page](https://www.researchgate.net/profile/Omar_Bello-Chavolla).
+
 
 ### Team Members
 
 <div style="float: left"><img src="images/fotoobc.jpg" align="middle" width="175" style="padding: 10px; float: right;"/></div>
 
-**Lab Coordinator**: Dr. Omar Yaxmehen Bello-Chavolla, MD PhD - Physician and researcher specialized in Applied Statistics interested in statistical modeling and machine learning as tools to address heterogeneity of metabolic diseases in admixed populations. Developer of the Metabolic Score for Insulin Resistance, the Metabolic Score for Visceral Fat and the SNNN Clusters tool for diabetes subgroup classification.
+**Lab Coordinator**: Dr. Omar Yaxmehen Bello-Chavolla, MD PhD - Physician and researcher specialized in Applied Statistics interested in statistical modeling and machine learning as tools to address heterogeneity of metabolic diseases and ageing in admixed populations. Developer of the Metabolic Score for Insulin Resistance, the Metabolic Score for Visceral Fat and the SNNN Clusters tool for diabetes subgroup classification.For more details see [my ResearchGate page](https://www.researchgate.net/profile/Omar_Bello-Chavolla).
 
-### Call for Research Associates
+### Call for Research Associates and Postgraduate Students
 
 Students interested in initiating a research internship, Masters or Doctoral position are welcome to apply for a research position. We are looking for young researchers interested in statistical modeling, machine learning and its application in understanding ageing physiology and its interaction with metabolism. Any inquiries please write to oyaxbell@yahoo.com.mx
 
