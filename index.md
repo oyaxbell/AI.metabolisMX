@@ -18,7 +18,7 @@ We are an emerging research group at the National Institute of Geriatrics in Mex
 
 ### Team Members
 
-<div style="float: left"><img src="images/fotoobc.jpg" align="middle" width="175" style="padding: 10px; float: right;"/></div>
+<div style="float: left"><img src="images/fotoobc.jpg" align="middle" width="150" style="padding: 10px; float: right;"/></div>
 
 **Lab Coordinator**: Dr. Omar Yaxmehen Bello-Chavolla, MD PhD - Physician and researcher specialized in Applied Statistics interested in statistical modeling and machine learning as tools to address heterogeneity of metabolic diseases and ageing in admixed populations. Developer of the Metabolic Score for Insulin Resistance, the Metabolic Score for Visceral Fat and the SNNN Clusters tool for diabetes subgroup classification. For more details see my [ResearchGate page](https://www.researchgate.net/profile/Omar_Bello-Chavolla).
 
