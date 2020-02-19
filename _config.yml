@@ -1,4 +1,4 @@
-theme: jekyll-theme-cayman
+remote_theme: chrisbobbe/jekyll-theme-prologue
 # Site wide configuration
 
 title: AI MetabolisMX Lab
