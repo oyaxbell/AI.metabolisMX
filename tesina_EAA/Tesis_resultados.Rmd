@@ -1,0 +1,664 @@
+---
+title: "Resultados tesina"
+author: "Omar Yaxmehen Bello-Chavolla"
+date: "10 de marzo de 2020"
+output:
+  html_document:
+    highlight: textmate
+    keep_md: yes
+    keep_tex: yes
+    pdf_document: null
+    theme: flatly
+    toc: yes
+    toc_depth: '3'
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (!require("corrplot")){install.packages("corrplot")}; library(corrplot)
+if (!require("corrr")){install.packages("corrr")}; library(corrr)
+if (!require("PerformanceAnalytics")){install.packages("PerformanceAnalytics")}; library(PerformanceAnalytics)
+if (!require("mice")){install.packages("mice")}; library(mice)
+if (!require("randtests")){install.packages("randtests")}; library(randtests)
+if (!require("nortest")){install.packages("nortest")}; library(nortest)
+if (!require("BlandAltmanLeh")){install.packages("BlandAltmanLeh")}; library(BlandAltmanLeh)
+if (!require("rsample")){install.packages("rsample")}; library(rsample)
+if (!require("gbm")){install.packages("gbm")}; library(gbm)
+if (!require("caret")){install.packages("caret")}; library(caret)
+if (!require("h2o")){install.packages("h2o")}; library(h2o)
+if (!require("ggplot2")){install.packages("ggplot2")}; library(ggplot2)
+if (!require("lime")){install.packages("lime")}; library(lime)
+if (!require("keras")){install.packages("keras")}; library(keras)
+if (!require("car")){install.packages("car")}; library(car)
+if (!require("leaps")){install.packages("leaps")}; library(leaps)
+if (!require("MASS")){install.packages("MASS")}; library(MASS)
+if (!require("lmtest")){install.packages("lmtest")}; library(lmtest)
+if (!require("blandr")){install.packages("blandr")}; library(blandr)
+library(multcomp); library(cowplot); library(e1071)
+livergbm<-read.csv("livergbm.csv")
+```
+
+# Análisis de regresión lineal múltiple
+
+Primero evaluaremos la distribución general de los datos para tener una idea de las transformaciones que puedan ser necesarias:
+
+```{r cars}
+correlacion_data<-cor(livergbm[c(3:7, 10)])
+corrplot(correlacion_data, method="circle")
+chart.Correlation(livergbm[c(3:7, 10)], histogram=TRUE, pch=19)
+cor(livergbm[c(3:7, 10)])
+```
+
+## Transformación de los datos
+
+Como pudimos apreciar en los gráficos previos, los datos tienen distribuciones variables, algunos tienen sesgos positivos y distribuciones adimétricas. Debido a esto, se considera pertinente realizar tranformaciones generales para aproximar distribuciones normales.
+
+```{r}
+ins<-log(livergbm$Insulina); ast_alt<-log(livergbm$AST_ALT)
+mets<-log(livergbm$METS_IR); sex<-as.factor(livergbm$Sexo)
+dm2<-as.factor(livergbm$DM2); ghep<-(livergbm$Grasa_hepatica)^(1/3)
+cintura<-log(livergbm$Cintura); edad<-livergbm$Edad
+dat<-data.frame(ghep, mets, ins, ast_alt, cintura,edad, sex, dm2)
+chart.Correlation(dat[,1:6], histogram=TRUE, pch=19)
+```
+
+Las transformaciones logran distribuciones más simétricas y mejoran la relación lineal con la variable dependiente. 
+
+
+Se evaluó la influencia de observaciones categóricas sobre el desenlace
+
+```{r}
+t.test(ghep[sex==0], ghep[sex==1])
+
+t.test(ghep[dm2==0], ghep[dm2==1])
+```
+
+
+### Observaciones influyentes
+
+Para identificar observaciones influyentes, procedemos a ajustar un modelo RLM con todos los datos e identificamos observaciones influyentes basadas en COVRATIO, DIFFITS Y DIFFBETAS.
+
+```{r}
+#Ajustamos modelo
+lm<-lm(ghep~., data=dat)
+par(mfrow=c(1, 2))
+DFFITS<-dffits(lm); plot(1:nrow(dat), DFFITS, pch = 19, cex = 1, xlab="Número de observación")
+abline(h=2*(sqrt(4/nrow(dat))),  col="blue", lwd=3, lty=2)
+abline(h=-2*(sqrt(4/nrow(dat))),  col="blue", lwd=3, lty=2)
+
+COVRATIO<-covratio(lm); plot(1:nrow(dat), COVRATIO, pch = 19, cex = 1, xlab="Número de observación")
+abline(h=((3*5)/nrow(dat))+1, col="blue", lwd=3, lty=2)
+abline(h=-((3*5)/nrow(dat))+1, col="blue", lwd=3, lty=2)
+
+l1<-influence.measures(lm)
+summary(l1) ##Se identificaron 40, 112 y 121 como influyentes
+```
+
+En las gráficas de DFFITS y COVRATIO se obervan dmuchas observaciones que salen de los límites de confianza, sin embargo solamente 3 en DFFITS y una en COVRATIO podría considerarse como influyente. Utilizando la función `influence.measures` se identificaron a los sujetos 40, 112 y 121 como obervaciones influyentes. Para la separación de la base en entrenamiento y validación, se decidió excluir a los sujetos, para potencialmente tener un mejor ajuste.
+
+## Separación de bases: Entrenamiento y validación.
+
+```{r}
+livergbm<-dat[-c(40, 112, 121),]
+#Establecemos semilla para reproducibilidad
+set.seed(45)
+#Separamos la base general en una de entrenamiento (70%) y una de validación (30%).
+liver1 <- initial_split(livergbm, prop = 0.70)
+liver_train <- training(liver1)
+liver_test  <- testing(liver1)
+head(liver_train)
+dat1<-liver_train
+```
+
+## Ajuste y selección del modelo en la base de entrenamiento
+
+```{r}
+#Ajustamos modelo inicial
+lm1<-lm(ghep~., data=dat1)
+summary(lm1)
+```
+
+Como podemos ver en el modelo previo,la variable `METS-IR`, el valor de `Insulina`en ayuno y la proporción `AST_ALT` están asociado con los valores transformados de grasa intrahepática. El modelo con todas las variables tiene un $R^2_{adj}=0.596$. Para evaluar si tenemos el mejor modelo, se procederá a utilizar el paquete `leaps` de `R` utilizando como criterio de selección del modelo al Criterio de Información Bayesiano (BIC, por sus siglas en inglés).
+
+```{r}
+##Seleccionamos nuevo modelo
+library(leaps)
+models <- regsubsets(ghep~., data = dat1, method = "seqrep")
+m1<-summary(models)
+plot(models)
+```
+
+En la gráfica previa, podemos apreciar que el mejor modelo de acuerdo al BIC incluye al índice `METS-IR` de resistencia a la insulina, el valor de `Insulina`en ayuno, la proporción `AST_ALT` y el status de diabetes mellitus tipo 2, `DM2`. Se procede a realizar un ajuste con las variables seleccionadas en el modelo, obteniendo el siguiente resultado:
+
+```{r}
+lm2<-lm(ghep~ast_alt+ins+mets+dm2, data=dat1)
+summary(lm2)
+```
+
+El modelo resultante tiene una $R^2_{adj}=0.5989$, que es ligeramente superior al modelo completo. Para evaluar si el modelo ajusta mejor que el que incluye a todas las variables, procederemos a hacer una comparación con BIC de ambos modelos.
+
+```{r}
+lm2<-lm(ghep~ast_alt+ins+mets+dm2, data=dat1)
+c(BIC(lm1), BIC(lm2)); BIC(lm1) > BIC(lm2)
+```
+
+Como podemos ver, la diferencia entre ambos BIC values es considerable, por lo que puede determinarse que el modelo depurado es superior.
+
+## Validación de supuestos
+
+### Supuesto de linealidad
+
+Para validar el supuesto de linealidad, realizaremos pruebas de falta de ajuste en cada uno de los coeficientes continuos, utilizando términos cuadráticos para cada variable:
+
+```{r}
+m1<-lm(ghep~mets+ins+ast_alt+dm2+I(mets^2), data=dat1)
+anova(m1)[5,]
+
+m2<-lm(ghep~mets+ins+ast_alt+dm2+I(ins^2), data=dat1)
+anova(m2)[5,]
+
+m3<-lm(ghep~mets+ins+ast_alt+dm2+I(ast_alt^2), data=dat1)
+anova(m3)[5,]
+```
+
+Como se puede apreciar en las salidas previas, ninguna de las variables viola el principio de linealidad, por lo que puede validarse éste supuesto.
+
+### Supuesto de homoscedasticidad de varianza e independencia de los errores
+
+Para validar el principio de homoscedasticidad de varianza se utilizará la prueba de Breusch-Pagan, así como la evaluación de gráficos de los residuos para comprobar la independencia de los errores.
+
+```{r}
+bptest(lm2, data = dat1, studentize = TRUE)
+rstd.0 <- stdres(lm2); par(mfrow=c(2,2)); x<-sort(dat1$mets)
+lw1<-loess(rstd.0 ~ x,data=dat1)
+plot(x, rstd.0, xlab="log(METS-IR)", pch = 19, cex = 1)
+lines(x, lw1$fitted,col="blue",lwd=3, lty=2)
+x1<-sort(dat1$ast_alt); lw2<-loess(rstd.0 ~ x1,data=dat1)
+plot(x1, rstd.0, xlab="log(AST/ALT)", pch = 19, cex = 1)
+lines(x1, lw2$fitted,col="blue",lwd=3, lty=2)
+x2<-sort(dat1$ins); lw3<-loess(rstd.0 ~ x2,data=dat1)
+plot(x2, rstd.0, xlab="log(Insulin)", pch = 19, cex = 1)
+lines(x2, lw3$fitted,col="blue",lwd=3, lty=2)
+x3<-sort(lm2$fitted); lw4<-loess(rstd.0 ~ x3,data=dat1)
+plot(x3, rstd.0, xlab="Valores ajustados", pch = 19, cex = 1)
+lines(x3, lw4$fitted,col="blue",lwd=3, lty=2)
+```
+
+Como puede apreciarse en la salida previa, la prueba de Breusch-Pagan no rechaza la hipótesis nula de homoscedasticidad de varianza para el modelo por lo cual puede determinarse que se cumple éste supuesto. En los gráficos de residuos vs. variables y valores ajustados se observan gráficos nulos por lo que hay homoscedasticidad de varianza y no hay dependencia en los errores.
+
+### Matriz de diseño de rango completo
+
+Para validar éste supuesto, evaluaremos la colinearidad de las variables en el modelo completo y en el modelo final, para validar que la colinearidad no influyó en la selección del modelo y que ésta no está presente en el modelo final. Para ésto calcularemos el índice de condición $\kappa$ y el factor de inflación de la varianza (VIF).    
+
+```{r}
+##Supuesto de matriz de diseño de rango completo
+#Evaluamos el índice kappa
+X <- matrix(1, dim(dat1), 5)
+X[,2:5] <- as.matrix(dat1[, c('mets', 'ast_alt', 'ins', 'dm2')])
+kappa(X)
+#Ahora calculamos los VIF utilizando el paquete car
+#Compararemos con el modelo con todaslas variables.
+vif(lm2); vif(lm1)
+
+```
+
+El valor del índice $\kappa$ es bajo y todos los VIF son menores a 5, por lo que puede establecerse que el modelo cumple el supuesto y no hay evidencia de multicolinealidad en el modelo.
+
+### Normalidad conjunta de los errores
+
+Para evaluar la normalidad conjunta de los errores primero exploraremos gráficamente los residuos y procederemos a probar su normalidad con la prueba de Anderson-Darling.
+
+```{r}
+##Supuesto de normalidad conjunta de los errores
+par(mfrow=c(1, 2))
+residuos<-lm2$residuals
+hist(residuos, density=10, breaks=10, prob=TRUE, xlab="Residuos", ylim=c(0, 1.2),main="Histograma de residuos")
+x<-residuos; m<-mean(residuos); std<-sd(residuos)
+curve(dnorm(x, m, std), add=TRUE, lty=2, col="blue", lwd=3)
+
+qqnorm(residuos); qqline(residuos, col = 2,lwd=2,lty=2)
+
+#Prueba de Anderson-Darling
+ad.test(residuos)
+```
+
+Como puede observarse en los gráficos previos y en la salida de `R`, no hay evidencia de que los residuos no sigan una distribución normal, por lo que puede determinarse que el modelo cumple con éste supuesto.
+
+## Análisis final del modelo
+
+Para el análisis final del modelo, evaluaremos si los intervalos de confianza simultáneos de los coeficientes son significativos cuando se consideran en conjunto utilizando el método de Hotelling-Scheffé, dado que estimaremos la simultaneidad en 5 coeficientes incluyendo al intercepto.
+
+```{r}
+K <- cbind(diag(length(coef(lm2))))
+rownames(K) <- names(coef(lm2)) 
+sim <- glht(lm2, linfct = K)
+confint(sim, level = 0.95)
+```
+
+Se puede observar que considerando todos los predictores de forma simultánea, solo el intercepto no mantiene significancia con un $\alpha=0.05$. Para comprobar la reproducibilida del modelo, lo aplicaremos en los datos de validación, utilizando la función `predict`.
+
+```{r}
+#Ajustamos los valores
+pred.lm<-(predict(lm2, newdata =liver_test))^3
+liver<-liver_test$ghep^3
+
+```
+
+
+# Self-normalizing neural network (Red neuronal auto-normalizable)
+
+```{r}
+train_data <- liver_train[,2:8]
+test_data <- liver_test[,2:8]
+train_targets<-liver_train$ghep 
+test_targets<-liver_test$ghep
+m1 <- apply(train_data[,c(1:5)], 2, mean)
+std <- apply(train_data[,c(1:5)], 2, sd)
+train_data <- scale(train_data[,c(1:5)], center = m1, scale = std)
+test_data <- scale(test_data[,c(c(1:5))], center = m1, scale = std)
+train_data<-as.matrix(as.data.frame(cbind(train_data, liver_train$sex, liver_train$dm2)))
+test_data<-as.matrix(as.data.frame(cbind(test_data, liver_test$sex, liver_test$dm2)))
+```
+
+## Arquitectura de la red
+
+Se diseñó una red neuronal con 2 capas ocultas
+
+-**Primera capa oculta:** 8 neuronas, con una función de actuvación SeLU y un regularizador kernel L1/L2, con valor de penalización $\lambda=0.001$
+
+-Se ajustaron varias redes con diferente número de neuronas, el valor óptimo de acuerdo a la literatura debe no ser mayor al número de predictores, en éste caso 8. 
+
+-**Segunda capa oculta**: Una función *layer_dropout* para eliminar neuronas con contirbución <10%, para prevenir el sobreajuste.
+
+-**Capa de salida**: Se utilizó una función softplus para evitar valores negativos. La función softplus se define como: $f(x)=log(1+e^x)$ y es una función estrictamente creciente.
+
+-**Función de pérdida:** Se utilizó el error absoluto medio como función de pérdida.
+
+-**Optimizador**: Se utilizó como optimizador ADAM.
+
+```{r}
+set.seed(123)
+build_model <- function() {
+  model <- keras_model_sequential() %>% 
+    layer_dense(units = 8, kernel_initializer='lecun_normal', activation="selu",input_shape = dim(train_data)[[2]]) %>% 
+    layer_alpha_dropout(rate=0.10) %>%
+    layer_dense(units = 1, activation='softplus')
+  
+  model %>% compile(
+    optimizer = "adam", 
+    loss = "mse", 
+    metrics = c("mae")
+  )
+}
+```
+
+## Cálculo de la métrica de error
+
+Posteriormente, evaluaremos el número óptimo de épocas que debemos entrenar la red neuronal para minimizar el error cuadrático medio, que elegimos como nuestra función de pérdida. Para esto diseñamos un algortmo de k-fold cross-validation, con k=4. Esto permitirá optimizar el cálculo del error de predicción.
+
+```{r, include=FALSE}
+#Evalúamos el número de épocas
+k <- 4
+indices <- sample(1:nrow(train_data))
+folds <- cut(indices, breaks = k, labels = FALSE)
+num_epochs<-50
+
+set.seed(123)
+
+for (i in 1:k) {
+  cat("processing fold #", i, "\n")
+  
+  # Prepare the validation data: data from partition # k
+  val_indices <- which(folds == i, arr.ind = TRUE)
+  val_data <- train_data[val_indices,]
+  val_targets <- train_targets[val_indices]
+  
+  # Prepare the training data: data from all other partitions
+  partial_train_data <- train_data[-val_indices,]
+  partial_train_targets <- train_targets[-val_indices]
+  
+  # Build the Keras model (already compiled)
+  model <- build_model()
+  
+  # Train the model (in silent mode, verbose=0)
+  history <- model %>% fit(
+    partial_train_data, partial_train_targets,
+    validation_data = list(val_data, val_targets),
+    epochs = num_epochs, batch_size = 1, verbose = 0
+  )
+
+}
+```
+```{r}
+print(history)
+
+plot(history)
+```
+
+Como podemos ver en la gráfica previa, identificamos que con $n=50$ épocas lográbamos un error cuadrático absoluto relativamente bajo. Ahora procedemos a esquematizar la arquitectura general de la red neuronal utilizada.
+
+```{r}
+
+#Reiniciamos el modelo, ajustamos por el número óptimo de épocas
+model <- build_model()
+summary(model)
+
+```
+
+Procedemos a entrenar el modelo en la base completa, entrenando los parámetros por 20 épocas.
+
+```{r}
+#Se entrena el modelo en la base completa
+set.seed(123)
+model %>% fit(train_data, train_targets,
+              epochs = 50, batch_size = 1, verbose = )
+print(history)
+```
+
+
+##Evaluación del modelo
+
+Finalmente, evaluamos el desempeño del modelo ajustado y calculamos los valores ajustados con el modelo final.
+
+```{r}
+#Evaluamos el modelo en la base de validación
+
+result <- model %>% evaluate(test_data, test_targets)
+
+result
+
+#Ajustamos los valores de validación
+pred.nn <- predict(model, as.matrix(test_data))^3
+
+
+```
+
+# Gradient Boosting Machine
+
+El gradient-boosting machine es un algoritmo diseñado para generar un modelo con mayor capacidad predictiva compuesto a partir de modelos con baja capacidad predictiva. Algunos de los hiperparámetros que deben ajustarse en el algoritmo para optimizar su función son:
+
+-**Tasa de aprendizaje**: Codificado como `shrinkage`en el paquete `gbm`. Determina el factor por el cual se ajusta el modelo en cada iteración.
+
+-**Profundidad de interacción**: Codificado como `interaction.depth` indica la profundidad máxima de los árboles utilizados en el modelo.
+
+-**Observaciones en nodos terminales**: Codificado como `n.minobsinnode`indica el número mínimo de observaciones requeridos en cada nodo termina. 
+
+-**Submuestras**: Codificado como `bag.fraction`indica el porcentaje de los datos de entrenamiento a muestrear para cada árbol en el modelo. 
+
+-**Fracción de entrenamiento**: Codificado como `train.fraction` indica el porcentaje de observaciones a muestrear para cada árbol, utilizando el resto de las observacuiones para estimar la función de pérdida.
+
+Ajustaremos el parámetro con los valores transformados y centrados, siguiendo un input similar al utilizado para la SNNN Para la optimización de los parámetros diseñamos una matriz con diferentes valores a probar por cross-validation utilizando el siguiente código:
+
+```{r}
+set.seed(123)
+##Evaluacion de los parametros de ajuste
+
+# create hyperparameter grid
+hyper_grid <- expand.grid(
+  shrinkage = c(.1, .2, .4),
+  interaction.depth = c(1, 3, 5),
+  n.minobsinnode = c(5, 7, 10),
+  bag.fraction = c(.65, .8, 1), 
+  optimal_trees = 0,               # a place to dump results
+  min_RMSE = 0                     # a place to dump results
+)
+
+
+# total number of combinations
+nrow(hyper_grid)
+
+```
+
+Como podemos observar, se iterará el modelo para un total de 81 combinaciones de hiperparámetros con el objetivo de encontrar la combinación que minimice la función de pérdida, establecida como la raíz cuadrada de la suma del cuadrado de los errores (RMSE). 
+
+```{r}
+# grid search 
+
+train_data<-as.data.frame(train_data)
+for(i in 1:nrow(hyper_grid)) {
+  
+  # reproducibility
+  set.seed(123)
+  
+  # train model
+  gbm.tune <- gbm(
+    formula = train_targets ~ .,
+    distribution = "gaussian",
+    data = train_data,
+    n.trees = 5000,
+    interaction.depth = hyper_grid$interaction.depth[i],
+    shrinkage = hyper_grid$shrinkage[i],
+    n.minobsinnode = hyper_grid$n.minobsinnode[i],
+    bag.fraction = hyper_grid$bag.fraction[i],
+    train.fraction = 0.75,
+    n.cores = NULL, # will use all cores by default
+    verbose = FALSE
+  )
+  
+  # add min training error and trees to grid
+  hyper_grid$optimal_trees[i] <- which.min(gbm.tune$valid.error)
+  hyper_grid$min_RMSE[i] <- sqrt(min(gbm.tune$valid.error))
+}
+
+hyper_grid %>% 
+  dplyr::arrange(min_RMSE) %>%
+  head(10)
+
+```
+
+Una vez realizada la búsqueda, concluimos que un `eta=0.30`, `max_depth=5`, `min_child_weight=7`, `subsample=0.65`, `colsample_bytree=1.0` y `optimal_trees=11` son los hiperparámetros óptimos para minimizar el RMSE, por lo cual ajustamos el modelo corregido.
+
+```{r}
+##Ajustamos el modelo con los parÃ¡metros corregidos
+set.seed(123)
+
+# train GBM model
+gbm.fit <- gbm(
+  formula = train_targets ~ .,
+  distribution = "gaussian",
+  data = train_data,
+  n.trees = 12,
+  interaction.depth = 3,
+  shrinkage = 0.4,
+  n.minobsinnode = 10,
+  bag.fraction = 0.65, 
+  train.fraction = 1,
+  cv.folds = 10,
+  n.cores = NULL, # will use all cores by default
+  verbose = FALSE
+)  
+
+# print results
+print(gbm.fit)
+
+#MSE y grÃ¡fico del modelo
+sqrt(min(gbm.fit$cv.error))
+gbm.perf(gbm.fit, method = "cv")
+```
+
+
+```{r}
+#Importancia de las variables
+par(mar = c(5, 8, 1, 1))
+summary(
+  gbm.fit, 
+  cBars = 10,
+  method = relative.influence, # also can use permutation.test.gbm
+  las = 2
+)
+```
+
+```{r}
+# predict values for test data
+test_data<-as.data.frame(test_data)
+pred.gbm <- predict(gbm.fit, n.trees = gbm.fit$n.trees, test_data)^3
+```
+
+
+
+# Comparación de los modelos
+
+```{r}
+#Mean absolute error
+mae.lm<-sum(abs(liver-pred.lm))/length(liver)
+mae.nn<-sum(abs(liver-pred.nn))/length(liver)
+mae.gbm<-sum(abs(liver-pred.gbm))/length(liver)
+
+c(mae.lm, mae.nn, mae.gbm)
+
+#Root of mean squared error
+rmse.lm<-sqrt(sum((liver-pred.lm)^2)/length(liver))
+rmse.nn<-sqrt(sum((liver-pred.nn)^2)/length(liver))
+rmse.gbm<-sqrt(sum((liver-pred.gbm)^2)/length(liver))
+c(rmse.lm, rmse.nn, rmse.gbm)
+
+#Mean squared error
+mse.lm<-sum((liver-pred.lm)^2)/length(liver)
+mse.nn<-sum((liver-pred.nn)^2)/length(liver)
+mse.gbm<-sum((liver-pred.gbm)^2)/length(liver)
+
+c(mse.lm, mse.nn, mse.gbm)
+
+#Correlación y R^2
+c(cor(liver, pred.lm), cor(liver, pred.lm)^2)
+c(cor(liver, pred.nn), cor(liver, pred.nn)^2)
+c(cor(liver, pred.gbm), cor(liver, pred.gbm)^2)
+
+#Correlación y R^2
+var(pred.lm);var(pred.gbm); var(pred.nn)
+
+#Graph
+liver.pred<-c(pred.lm, pred.nn, pred.gbm)
+Method<-c(rep("RLM", length(liver)), rep("SNNN", length(liver)), rep("GBM", length(liver)))
+liver1<-data.frame(liver.pred, Method)
+liver.lm<-c(liver, pred.lm)
+Method<-c(rep("Original data", length(liver)), rep("RLM", length(liver)))
+liver2<-data.frame(liver.lm, Method)
+liver.nn<-c(liver, pred.nn)
+Method<-c(rep("Original data", length(liver)), rep("SNNN", length(liver)))
+liver3<-data.frame(liver.nn, Method)
+liver.gbm<-c(liver, pred.gbm)
+Method<-c(rep("Original data", length(liver)), rep("GBM", length(liver)))
+liver4<-data.frame(liver.gbm, Method)
+plot_multi_histogram <- function(df, feature, label_column) {
+    plt <- ggplot(df, aes(x=eval(parse(text=feature)), fill=eval(parse(text=label_column)))) +
+    geom_histogram(alpha=0.7, position="identity", aes(y = ..density..), color="black", bins=20) +
+    geom_density(alpha=0.7) +
+    geom_vline(aes(xintercept=mean(eval(parse(text=feature)))), color="black", linetype="dashed", size=1) +
+    labs(x=feature, y = "Density")
+    plt + guides(fill=guide_legend(title=label_column))
+}
+par(mfrow=c(2,2))
+p1<-plot_multi_histogram(liver1, 'liver.pred', 'Method')+xlab("Grasa intrahepática (%)")+ylab("Frecuencia")
+p2<-plot_multi_histogram(liver2, 'liver.lm', 'Method')+xlab("Grasa intrahepática (%)")+ylab("Frecuencia")
+p3<-plot_multi_histogram(liver3, 'liver.nn', 'Method')+xlab("Grasa intrahepática (%)")+ylab("Frecuencia")
+p4<-plot_multi_histogram(liver4, 'liver.gbm', 'Method')+xlab("Grasa intrahepática (%)")+ylab("Frecuencia")
+
+plot_grid(p1,p2,p3,p4, labels = c("A", "B", "C","D"))
+```
+
+```{r}
+#Gráficos de Bland-Altman
+stats1<-blandr.statistics(liver, pred.lm, sig.level = 0.95, LoA.mode = 1)
+c(stats1$bias, stats1$biasUpperCI, stats1$biasLowerCI)
+c(stats1$upperLOA, stats1$upperLOA_upperCI, stats1$upperLOA_lowerCI)
+c(stats1$lowerLOA, stats1$lowerLOA_upperCI, stats1$lowerLOA_lowerCI)
+
+b.lm<-blandr.plot.ggplot(stats1, method1name = "MRI-S",
+  method2name = "Multiple linear regression",
+  plotTitle = NULL,
+  ciDisplay = TRUE, ciShading = TRUE, normalLow = FALSE,
+  normalHigh = FALSE, overlapping = FALSE, x.plot.mode = "means",
+  y.plot.mode = "difference", plotProportionalBias = FALSE,
+  plotProportionalBias.se = TRUE, assume.differences.are.normal = TR)
+
+stats2<-blandr.statistics(liver, pred.nn, sig.level = 0.95, LoA.mode = 1)
+c(stats2$bias, stats2$biasUpperCI, stats2$biasLowerCI)
+c(stats2$upperLOA, stats2$upperLOA_upperCI, stats2$upperLOA_lowerCI)
+c(stats2$lowerLOA, stats2$lowerLOA_upperCI, stats2$lowerLOA_lowerCI)
+
+b.nn<-blandr.plot.ggplot(stats2, method1name = "MRI-S",
+  method2name = "Feed-forward neural network",
+  plotTitle = NULL,
+  ciDisplay = TRUE, ciShading = TRUE, normalLow = FALSE,
+  normalHigh = FALSE, overlapping = FALSE, x.plot.mode = "means",
+  y.plot.mode = "difference", plotProportionalBias = FALSE,
+  plotProportionalBias.se = TRUE, assume.differences.are.normal = TR)
+
+stats3<-blandr.statistics(liver, pred.gbm, sig.level = 0.95, LoA.mode = 1)
+c(stats3$bias, stats3$biasUpperCI, stats3$biasLowerCI)
+c(stats3$upperLOA, stats3$upperLOA_upperCI, stats3$upperLOA_lowerCI)
+c(stats3$lowerLOA, stats3$lowerLOA_upperCI, stats3$lowerLOA_lowerCI)
+
+b.gbm<-blandr.plot.ggplot(stats3, method1name = "MRI-S",
+  method2name = "Gradient-boosting machine",
+  plotTitle = NULL,
+  ciDisplay = TRUE, ciShading = TRUE, normalLow = FALSE,
+  normalHigh = FALSE, overlapping = FALSE, x.plot.mode = "means",
+  y.plot.mode = "difference", plotProportionalBias = FALSE,
+  plotProportionalBias.se = TRUE, assume.differences.are.normal = TR)
+plot_grid(b.lm, b.nn, b.gbm, labels = c("A", "B", "C"), ncol = 3)
+
+stats<-data.frame(liver,pred.lm, pred.gbm, pred.nn)
+c1<-cor.test(stats$liver,stats$pred.lm,method="pearson",conf.level = 0.95, nrep = 1000)
+g1<-ggplot(stats, aes(x=pred.lm,y=liver))+geom_point()+
+  geom_smooth(method = "lm", formula = y ~ x,color="red", size=2)+
+  xlab("Grasa hepática (%) RLM")+
+  ylab("Grasa hepática (%) RMN")+theme_classic()+
+  annotate("text", x = 7, y = 4.5, label = paste0("r=",round(c1$estimate, 3)))+
+  annotate("text", x = 7, y = 3.5, label = paste0("95% CI:",round(c1$conf.int[1],3),"-",round(c1$conf.int[2],3)))+
+  annotate("text", x = 7, y = 2.5, label = paste0("p<0.001"))+
+  annotate("text", x = 7, y = 1.5, label = paste0("R^2=",round(summary(lm(stats$liver~stats$pred.lm))$r.squared,3)))
+c1<-cor.test(stats$liver,stats$pred.gbm,method="pearson",conf.level = 0.95, nrep = 1000)
+g2<-ggplot(stats, aes(x=pred.gbm,y=liver))+geom_point()+
+  geom_smooth(method = "lm", formula = y ~ x,color="red", size=2)+
+  xlab("Grasa hepática (%) GBM")+
+  ylab("Grasa hepática (%) RMN")+theme_classic()+
+  annotate("text", x = 10, y = 4.5, label = paste0("r=",round(c1$estimate, 3)))+
+  annotate("text", x = 10, y = 3.5, label = paste0("95% CI:",round(c1$conf.int[1],3),"-",round(c1$conf.int[2],3)))+
+  annotate("text", x = 10, y = 2.5, label = paste0("p<0.001"))+
+  annotate("text", x = 10, y = 1.5, label = paste0("R^2=",round(summary(lm(stats$liver~stats$pred.gbm))$r.squared,3)))
+c1<-cor.test(stats$liver,stats$pred.nn,method="pearson",conf.level = 0.95, nrep = 1000)
+g3<-ggplot(stats, aes(x=pred.nn,y=liver))+geom_point()+
+  geom_smooth(method = "lm", formula = y ~ x,color="red", size=2)+
+  xlab("Grasa hepática (%) SNNN")+
+  ylab("Grasa hepática (%) RMN")+theme_classic()+
+  annotate("text", x = 10, y = 4.5, label = paste0("r=",round(c1$estimate, 3)))+
+  annotate("text", x = 10, y = 3.5, label = paste0("95% CI:",round(c1$conf.int[1],3),"-",round(c1$conf.int[2],3)))+
+  annotate("text", x = 10, y = 2.5, label = paste0("p<0.001"))+
+  annotate("text", x = 10, y = 1.5, label = paste0("R^2=",round(summary(lm(stats$liver~stats$pred.nn))$r.squared,3)))
+
+fig<-plot_grid(g1,g2,g3, labels=c("A", "B", "C"), ncol=3, nrow=1)
+fig
+```
+```{r}
+library(pROC); library(OptimalCutpoints)
+nafld1<-NULL; nafld1[liver>5.5]<-1; nafld1[!liver>5.5]<-0
+roc(nafld1, pred.lm, ci = TRUE)
+roc(nafld1, pred.nn,ci = TRUE)
+roc(nafld1, pred.gbm,ci = TRUE)
+
+liver2<-data.frame(nafld1, pred.lm, pred.nn, pred.gbm)
+
+# Defaut method
+lm <- optimal.cutpoints(X = "pred.lm", status = "nafld1", tag.healthy = 0, 
+methods = "Youden", data = liver2, pop.prev = NULL, control = control.cutpoints(), ci.fit = TRUE, conf.level = 0.95, trace = FALSE)
+summary(lm)
+
+nn <- optimal.cutpoints(X = "pred.nn", status = "nafld1", tag.healthy = 0, 
+methods = "Youden", data = liver2, pop.prev = NULL, control = control.cutpoints(), ci.fit = TRUE, conf.level = 0.95, trace = FALSE)
+summary(nn)
+
+gbm1 <- optimal.cutpoints(X = "pred.gbm", status = "nafld1", tag.healthy = 0, 
+methods = "Youden", data = liver2, pop.prev = NULL, control = control.cutpoints(), ci.fit = TRUE, conf.level = 0.95, trace = FALSE)
+summary(gbm1)
+par(mfrow=c(1,3))
+plot(lm, which=1); plot(nn, which=1); plot(gbm1, which=1)
+
+
+```
+
